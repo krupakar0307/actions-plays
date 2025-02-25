@@ -1,0 +1,21 @@
+name: 'Notify PRs of Main Status'
+description: 'Triggers PR workflows when main branch changes'
+
+inputs:
+  github-token:
+    description: 'GitHub token'
+    required: true
+  base-branch:
+    description: 'Base branch (default: main)'
+    required: false
+    default: 'main'
+
+outputs:
+  rerun-count:
+    description: 'Number of PR workflows triggered'
+  rerun-status:
+    description: 'Status of rerun operation (success/failure)'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile' 

@@ -1,0 +1,19 @@
+name: 'Check Base Branch Status'
+description: 'Checks if the main branch is green or red'
+
+inputs:
+  github-token:
+    description: 'GitHub token'
+    required: true
+  base-branch:
+    description: 'Base branch to check (default: main)'
+    required: false
+    default: 'main'
+
+outputs:
+  is-main-green:
+    description: 'Whether main branch is green (true) or red (false)'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile' 

@@ -1,0 +1,15 @@
+name: Main Branch
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Notify PRs of main change
+        uses: ./.github/actions/check-pr-notify
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }} 
