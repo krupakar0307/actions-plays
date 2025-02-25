@@ -1,0 +1,20 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/check-base-branch-status
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          base_branch: main 

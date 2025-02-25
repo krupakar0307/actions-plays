@@ -1,0 +1,40 @@
+name: 'Check PR Notifies'
+description: 'Reruns PR workflows when base branch status changes. Only runs on push to main branch or workflow_dispatch.'
+
+inputs:
+  github_token:
+    description: 'GitHub token for authentication'
+    required: true
+    default: ${{ github.token }}
+  base_branch:
+    description: 'Base branch to check (default: main)'
+    required: false
+    default: 'main'
+
+outputs:
+  rerun-count:
+    description: 'Number of PR workflows rerun'
+    value: ${{ steps.notify.outputs.rerun-count }}
+  rerun-status:
+    description: 'Status of rerun attempts (success/failure)'
+    value: ${{ steps.notify.outputs.rerun-status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install requests
+
+    - name: Notify and rerun PR workflows
+      id: notify
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+      run: python ${{ github.action_path }}/checks.py 

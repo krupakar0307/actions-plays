@@ -1,0 +1,22 @@
+name: Main Branch Notify
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  notify-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/check-pr-notifies
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          base_branch: main 

@@ -1,0 +1,38 @@
+# name: CI/CD Pipeline
+
+# on:
+#   # Trigger on PR events
+#   pull_request:
+#     types: [opened, synchronize, reopened]
+  
+#   # Trigger on push to main
+#   push:
+#     branches:
+#       - main
+  
+#   # Allow manual trigger
+#   workflow_dispatch:
+  
+#   # Run periodically to check PR status
+#   # schedule:
+#   #   - cron: '*/30 * * * *'  # Runs every 30 minutes
+
+# # Add permissions block
+# permissions:
+#   actions: write    # Required to rerun workflows
+#   contents: read    # Required to read repository content
+#   pull-requests: read    # Required to read PR information
+
+# jobs:
+#   check-status:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Check Main Status
+#         id: check
+#         uses: ./.github/actions/check-main-status
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           base_branch: main

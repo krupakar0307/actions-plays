@@ -1,0 +1,123 @@
+import os
+import requests
+
+# Get environment variables needed for GitHub API authentication
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")    
+REPO = os.getenv("GITHUB_REPOSITORY")       
+BASE_BRANCH = os.getenv("BASE_BRANCH", "main")  # Default to 'main' if not specified
+
+# Check if required environment variables exist
+if not GITHUB_TOKEN or not REPO:
+    print("❌ Missing required environment variables: GITHUB_TOKEN or GITHUB_REPOSITORY")
+    exit(1)
+
+headers = {
+    "Authorization": f"Bearer {GITHUB_TOKEN}",
+    "Accept": "application/vnd.github.v3+json",
+}
+
+def check_main_status():
+    """Check if base branch is green (all workflows passing)"""
+    main_workflow_url = f"https://api.github.com/repos/{REPO}/actions/runs?branch={BASE_BRANCH}"
+    response = requests.get(main_workflow_url, headers=headers)
+    
+    if response.status_code != 200:
+        print(f"⚠️ Error fetching {BASE_BRANCH} branch workflows: {response.json()}")
+        return False
+    
+    runs = response.json().get("workflow_runs", [])
+    if not runs:
+        print(f"ℹ️ No workflows found for {BASE_BRANCH} branch.")
+        return True
+    
+    latest_run = runs[0]  # GitHub API returns newest first
+    is_green = latest_run["conclusion"] == "success"
+    
+    if is_green:
+        print(f"✅ {BASE_BRANCH} branch is green and ready for merging")
+    else:
+        print(f"❌ {BASE_BRANCH} branch status: {latest_run['conclusion']} - Needs attention")
+    
+    return is_green
+
+def check_and_rerun_pr_workflows():
+    """Check all open PRs and rerun any failed workflows"""
+    # Fetch all open PRs
+    pr_url = f"https://api.github.com/repos/{REPO}/pulls?state=open"
+    pr_response = requests.get(pr_url, headers=headers)
+
+    if pr_response.status_code != 200:
+        print(f"❌ Error fetching PRs: {pr_response.json()}")
+        return False
+
+    prs = pr_response.json()
+    if not prs:
+        print("✅ No open PRs found.")
+        return True
+
+    print(f"🔎 Found {len(prs)} open PRs. Checking their workflows...")
+
+    for pr in prs:
+        pr_branch = pr["head"]["ref"]
+        
+        # Get workflow runs for the PR branch
+        pr_workflow_url = f"https://api.github.com/repos/{REPO}/actions/runs?branch={pr_branch}"
+        pr_workflow_response = requests.get(pr_workflow_url, headers=headers)
+
+        if pr_workflow_response.status_code != 200:
+            print(f"⚠️ Error fetching workflows for {pr_branch}: {pr_workflow_response.json()}")
+            continue
+
+        all_runs = pr_workflow_response.json().get("workflow_runs", [])
+        if not all_runs:
+            print(f"✅ No workflows found for PR branch {pr_branch}.")
+            continue
+
+        # Get latest workflow run
+        latest_run = all_runs[0]
+        
+        # Only rerun if the latest run failed
+        if latest_run["conclusion"] == "failure":
+            run_id = latest_run["id"]
+            
+            # Rerun only failed jobs
+            rerun_url = f"https://api.github.com/repos/{REPO}/actions/runs/{run_id}/rerun-failed-jobs"
+            rerun_response = requests.post(rerun_url, headers=headers)
+
+            if rerun_response.status_code == 201:
+                print(f"🔄 Successfully triggered re-run of failed jobs for {pr_branch} (Latest Workflow ID: {run_id})")
+            else:
+                print(f"❌ Failed to re-run jobs for workflow {run_id} on {pr_branch}: {rerun_response.json()}")
+
+def main():
+    event_name = os.getenv("GITHUB_EVENT_NAME")
+    
+    # If running locally without event name, check both conditions
+    if not event_name:
+        print("🔍 Running local check (no event type specified)...")
+        # First check base branch status
+        is_base_green = check_main_status()
+        print("\n" + "="*50 + "\n")  # Separator for clarity
+        
+        # Then check PR workflows regardless of base branch status
+        check_and_rerun_pr_workflows()
+        
+        # Exit with status code based on base branch
+        exit(0 if is_base_green else 1)
+        
+    # Normal GitHub Actions event handling
+    elif event_name == "pull_request":
+        print(f"🔍 Checking {BASE_BRANCH} branch status for PR...")
+        is_main_green = check_main_status()
+        if not is_main_green:
+            print(f"⚠️ Please fix {BASE_BRANCH} branch before merging this PR")
+            exit(1)
+    elif event_name in ["schedule", "workflow_dispatch", "push"]:
+        print("🔄 Checking and re-running failed PR workflows...")
+        check_and_rerun_pr_workflows()
+    else:
+        print(f"⚠️ Unsupported event type: {event_name}")
+        exit(1)
+
+if __name__ == "__main__":
+    main() 
