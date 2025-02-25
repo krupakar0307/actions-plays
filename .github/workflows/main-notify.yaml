@@ -1,10 +1,6 @@
-name: Main Branch Notify
+name: Main Branch checks
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+on: [push, pull_request]
 
 permissions:
   actions: write

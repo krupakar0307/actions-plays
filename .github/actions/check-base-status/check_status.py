@@ -2,12 +2,18 @@ import os
 import requests
 
 # Get environment variables
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")    
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")    # Changed from INPUT_GITHUB-TOKEN
 REPO = os.getenv("GITHUB_REPOSITORY")       
-BASE_BRANCH = os.getenv("INPUT_BASE-BRANCH", "main")  
+BASE_BRANCH = os.getenv("BASE_BRANCH", "main")  # Changed from INPUT_BASE-BRANCH
 
-if not GITHUB_TOKEN or not REPO:
-    print("Missing required environment variables")
+missing_vars = []
+if not GITHUB_TOKEN:
+    missing_vars.append("GITHUB_TOKEN")
+if not REPO:
+    missing_vars.append("GITHUB_REPOSITORY")
+
+if missing_vars:
+    print(f"Missing required environment variables: {', '.join(missing_vars)}")
     exit(1)
 
 headers = {

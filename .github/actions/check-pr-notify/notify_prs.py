@@ -2,12 +2,12 @@ import os
 import requests
 
 # Get environment variables
-GITHUB_TOKEN = os.getenv("INPUT_GITHUB-TOKEN")    
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")    # Changed from INPUT_GITHUB-TOKEN
 REPO = os.getenv("GITHUB_REPOSITORY")       
 
 missing_vars = []
 if not GITHUB_TOKEN:
-    missing_vars.append("INPUT_GITHUB-TOKEN")
+    missing_vars.append("GITHUB_TOKEN")
 if not REPO:
     missing_vars.append("GITHUB_REPOSITORY")
 
