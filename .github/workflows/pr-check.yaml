@@ -17,4 +17,4 @@ jobs:
       - uses: ./.github/actions/check-base-branch-status
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          base_branch: mainss
+          base_branch: main
