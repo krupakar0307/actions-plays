@@ -79,5 +79,8 @@ def notify_prs():
     write_output("rerun-status", "success")
     return rerun_count, "success"
 
+def main():
+    notify_prs()
+
 if __name__ == "__main__":
-    notify_prs() 
+    main() 

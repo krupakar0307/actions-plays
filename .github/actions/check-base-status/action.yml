@@ -1,19 +1,37 @@
 name: 'Check Base Branch Status'
-description: 'Checks if the main branch is green or red'
+description: 'Checks if base branch is green before allowing PR merge. Only runs on pull_request events.'
 
 inputs:
-  github-token:
-    description: 'GitHub token'
+  github_token:
+    description: 'GitHub token for authentication'
     required: true
-  base-branch:
+    default: ${{ github.token }}
+  base_branch:
     description: 'Base branch to check (default: main)'
     required: false
     default: 'main'
 
 outputs:
-  is-main-green:
-    description: 'Whether main branch is green (true) or red (false)'
+  base-branch-status:
+    description: 'Status of the base branch (success/failure)'
+    value: ${{ steps.check.outputs.base-branch-status }}
 
 runs:
-  using: 'docker'
-  image: 'Dockerfile' 
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Install dependencies
+      shell: bash
+      run: pip install requests
+
+    - name: Check base branch status
+      id: check
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        BASE_BRANCH: ${{ inputs.base_branch }}
+      run: python ${{ github.action_path }}/check_status.py 
