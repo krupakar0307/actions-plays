@@ -13,8 +13,8 @@ jobs:
   check-base:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ./.github/actions/check-base-branch-status
+      - name: Check Main Branch Status
+        uses: krupakar0307/action-github-status@v1.0.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          base_branch: main 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          main-branch: 'main'
