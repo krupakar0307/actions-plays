@@ -1,0 +1,18 @@
+name: Notify PRs
+on:
+  push:
+    branches: [main]
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  notify-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/check-pr-notify
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }} 

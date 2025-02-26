@@ -1,0 +1,35 @@
+name: 'Notify PRs on Main Change'
+description: 'Triggers PR workflow reruns when main branch changes'
+
+inputs:
+  github_token:
+    description: 'GitHub token for authentication'
+    required: true
+    default: ${{ github.token }}
+
+outputs:
+  rerun-count:
+    description: 'Number of PR workflows triggered'
+    value: ${{ steps.notify.outputs.rerun-count }}
+  rerun-status:
+    description: 'Status of rerun operation (success/failure)'
+    value: ${{ steps.notify.outputs.rerun-status }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    
+    - name: Install dependencies
+      shell: bash
+      run: pip install requests
+
+    - name: Notify PRs
+      id: notify
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+      run: python ${{ github.action_path }}/notify_prs.py 
