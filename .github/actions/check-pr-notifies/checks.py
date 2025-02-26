@@ -162,9 +162,9 @@ def main():
     event_name = os.getenv("GITHUB_EVENT_NAME")
     ref = os.getenv("GITHUB_REF")
     
-    # if not (event_name == "push" and ref == "refs/heads/main"):
-    #     print("This action only runs on push to main branch")
-    #     exit(1)
+    if not (event_name == "push" and ref == "refs/heads/main"):
+        print("This action only runs on push to main branch")
+        exit(1)
         
     trigger_pr_workflows()
 
